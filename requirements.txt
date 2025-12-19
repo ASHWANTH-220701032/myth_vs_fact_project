@@ -1,8 +1,8 @@
-torch==2.1.2
+streamlit
+torch
 transformers
+accelerate
 scikit-learn
 pandas
 numpy
-streamlit
-accelerate
 sentencepiece
