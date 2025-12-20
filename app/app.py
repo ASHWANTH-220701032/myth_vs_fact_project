@@ -1,18 +1,21 @@
 import streamlit as st
 import torch
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
-import os
 
 st.set_page_config(page_title="Health Myth vs Fact", layout="centered")
 
 st.title("🩺 Health Myth vs Fact Detector")
 
-MODEL_PATH = "model/saved_model"
-
-@st.cache_resource
+@st.cache_resource(show_spinner=True)
 def load_model():
-    tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_PATH)
-    model = DistilBertForSequenceClassification.from_pretrained(MODEL_PATH)
+    tokenizer = DistilBertTokenizerFast.from_pretrained(
+        "distilbert-base-uncased"
+    )
+    model = DistilBertForSequenceClassification.from_pretrained(
+        "distilbert-base-uncased",
+        num_labels=2
+    )
+    model.eval()
     return tokenizer, model
 
 tokenizer, model = load_model()
@@ -24,7 +27,8 @@ if st.button("Verify"):
         st.warning("Please enter a statement.")
     else:
         inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-        outputs = model(**inputs)
+        with torch.no_grad():
+            outputs = model(**inputs)
 
         probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
         label = torch.argmax(probs).item()
